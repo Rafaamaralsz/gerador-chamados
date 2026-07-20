@@ -1,0 +1,121 @@
+<main class="page-shell">
+  <section class="hero">
+    <span class="eyebrow">SUPORTE TÉCNICO</span>
+    <h1>Gerador de descrição de chamados</h1>
+    <p>Preencha somente o essencial, marque os procedimentos realizados e gere um texto padronizado em poucos segundos.</p>
+  </section>
+
+  <form class="workspace" [formGroup]="form" (ngSubmit)="generateText()">
+    <section class="card form-card">
+      <div class="section-heading">
+        <div class="step">1</div>
+        <div>
+          <h2>Dados do chamado</h2>
+          <p>Informações básicas para montar a descrição.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="field">
+          <span>Empresa *</span>
+          <select formControlName="empresa" [class.invalid]="hasError('empresa')">
+            <option value="">Selecione a empresa</option>
+            @for (company of companies; track company) {
+              <option [value]="company">{{ company }}</option>
+            }
+          </select>
+          @if (hasError('empresa')) { <small>Selecione uma empresa.</small> }
+        </label>
+
+        <label class="field">
+          <span>Condomínio ou departamento *</span>
+          <input formControlName="local" placeholder="Ex.: Condomínio Jardim ou Financeiro" [class.invalid]="hasError('local')">
+          @if (hasError('local')) { <small>Informe o condomínio ou departamento.</small> }
+        </label>
+
+        <label class="field full-width">
+          <span>Categoria do problema *</span>
+          <select formControlName="categoria" [class.invalid]="hasError('categoria')">
+            <option value="">Selecione a categoria</option>
+            @for (category of categories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+          @if (hasError('categoria')) { <small>Selecione uma categoria.</small> }
+        </label>
+
+        <label class="field full-width">
+          <span>Descrição do problema *</span>
+          <textarea rows="5" formControlName="problema" placeholder="Ex.: o ramal 102 não está recebendo ligações externas" [class.invalid]="hasError('problema')"></textarea>
+          <div class="field-footer">
+            @if (hasError('problema')) { <small>Descreva o problema informado pelo cliente.</small> }
+            <span>{{ form.controls.problema.value?.length ?? 0 }}/1200</span>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <section class="card form-card">
+      <div class="section-heading">
+        <div class="step">2</div>
+        <div>
+          <h2>Procedimentos já realizados</h2>
+          <p>Marque apenas o que o cliente já tentou.</p>
+        </div>
+      </div>
+
+      <div class="check-grid">
+        @for (procedure of procedures; track procedure.id) {
+          <button
+            type="button"
+            class="check-option"
+            [class.selected]="selectedProcedures().has(procedure.id)"
+            [attr.aria-pressed]="selectedProcedures().has(procedure.id)"
+            (click)="toggleProcedure(procedure.id)">
+            <span class="checkbox">{{ selectedProcedures().has(procedure.id) ? '✓' : '' }}</span>
+            {{ procedure.label }}
+          </button>
+        }
+      </div>
+
+      <button
+        type="button"
+        class="check-option no-procedure"
+        [class.selected]="form.controls.nenhumProcedimento.value"
+        (click)="toggleNoProcedure()">
+        <span class="checkbox">{{ form.controls.nenhumProcedimento.value ? '✓' : '' }}</span>
+        Nenhum procedimento realizado
+      </button>
+
+      <label class="field other-field">
+        <span>Outro procedimento ou observação</span>
+        <input formControlName="outroProcedimento" placeholder="Ex.: teste realizado em outra rede">
+      </label>
+    </section>
+
+    <section class="actions">
+      <button type="button" class="button secondary" (click)="clearAll()">Limpar</button>
+      <button type="submit" class="button primary">Gerar texto</button>
+    </section>
+  </form>
+
+  <section class="card result-card">
+    <div class="result-header">
+      <div>
+        <span class="eyebrow">RESULTADO</span>
+        <h2>Texto do chamado</h2>
+        <p>O texto pode ser editado antes de copiar.</p>
+      </div>
+      <button type="button" class="button copy" [disabled]="!generatedText()" (click)="copyText()">
+        {{ copied() ? 'Copiado!' : 'Copiar texto' }}
+      </button>
+    </div>
+
+    <textarea
+      class="generated-text"
+      [value]="generatedText()"
+      (input)="updateGeneratedText($event)"
+      placeholder="O texto gerado aparecerá aqui..."
+      aria-label="Texto gerado do chamado"></textarea>
+  </section>
+</main>
